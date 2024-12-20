@@ -169,6 +169,10 @@ int main(int argc, char **argv) {
     sched_file = stdin;
 
   parse(dfg_file, op_file, &dfg, ops, clock_period);
+  
+  int sat_sdc_lat, asap_lat;
+  fscanf(dfg_file, "%d%d", &sat_sdc_lat, &asap_lat);
+
   int n_stmts = dfg.stmts.size();
   
   for (int i = 0; i < n_stmts; ++i) {
@@ -194,7 +198,11 @@ int main(int argc, char **argv) {
   printf("================\n");
   printf("||    PASS    ||\n");
   printf("================\n");
+
   printf("Total latency: %d\n", total_latency);
+
+  double ratio = 20.0 / (double)(sat_sdc_lat - asap_lat);
+  printf("Score: %.2lf\n", min(100.0, max(60.0, (double)(total_latency-asap_lat) * ratio + 80.0)));
 
   return 0;
 }

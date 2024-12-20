@@ -305,3 +305,4 @@ addf 335 345
 shift_left 11 -1 
 addi 44 -1 
 store 6 174 346 
+104 121
