@@ -114,14 +114,16 @@ $$\text{max}_i \left\lbrace\ \text{start-cycle}_i + \text{max}(\text{latency}_i-
 ```bash
 mkdir build && cd build && cmake .. -DCMAKE_CXX_FLAGS=-fpermissive && make
 ```
-并将 `minisat/build/libminisat.a` 复制到项目跟目录下。
+并将 `minisat/build/libminisat.a` 复制到本项目根目录下。
 
-具体使用方法如下：
+Minisat的接口具体使用方法如下：
 
 ```c++
 #include <minisat/core/Solver.h>
 
 int main() {
+  // Minisat中的函数都在namespace Minisat中
+  // 如果不想每次都加Minisat::，可以using namespace Minisat;
   Minisat::Solver solver;
   
   Minisat::Var a, b, c;
