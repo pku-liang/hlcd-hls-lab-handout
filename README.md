@@ -16,14 +16,14 @@
 
 接下来t行,每行以字符串开头表示op_type,接下来4个数分别表示operand_num,delay,latency,limit。
 
-operand_num表示该op的operand数量。例如%3 = addi %1 %2,则operand_num=2。(只有store操作没有返回值)
+operand_num表示该op的operand数量。例如%3 = addi %1 %2,则operand_num=2。对于load和store，其第一个operand的值为memory。
 
 delay表示该运算的组合延迟,最终需要满足同一周期内的运算依赖保证delay之和不超过clock,latency为该运算所需周期数。
 时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算，而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
 
-limit为该运算单元的数量,单周期内同一运算不能超过该数量。
+limit为该运算单元的数量，任意周期内执行的运算不能超过该数量，-1表示该运算没有限制（对于latency=0的组合逻辑，保证limit=-1）。
 
-(其中load和store运算的limit为memory的端口数量,相同且只为1或2)
+load和store运算的limit为memory的端口数量，相同且只为1或2，对同一个memory的load和store运算共享这limit个资源。
 
 ## 样例输入
 
@@ -36,8 +36,8 @@ store 2 5 7
 
 //Resource input
 3 5.0
-shift_left 2 0.1 0 1
-addi 2 3.1 0 1
+shift_left 2 0.1 0 -1
+addi 2 3.1 0 -1
 store 3 2.1 1 2
 ```
 
@@ -95,11 +95,9 @@ shift_left和addi在第一个周期运行,store在第二个周期运行。
 $$\text{max}_i \left\lbrace\ \text{start-cycle}_i + \text{max}(\text{latency}_i-1, 0) \right\rbrace$$
 
 ### 运行方法
-
 - 运行 `make sched` 编译调度程序
 - 运行 `make verifier` 编译检查程序
-- `./sched ir.txt op.txt schedule.txt` 输出调度结果到 `schedule.txt`
-- `./verifier ir.txt op.txt schedule.txt` 验证 `schedule.txt` 内的结果
+- 运行 `make test TEST=[1..5]` 对测试调度程序
 
 ## 评分标准
 
@@ -111,7 +109,14 @@ $$\text{max}_i \left\lbrace\ \text{start-cycle}_i + \text{max}(\text{latency}_i-
 
 ## Minisat求解器使用
 
-实现SDC+SAT需要调用SAT求解器，代码框架中提供了minisat作为可能用到的SAT求解器，使用方法如下：
+实现SDC+SAT需要调用SAT求解器，下发代码中提供了minisat作为可能用到的SAT求解器。若 `minisat/` 目录为空，则运行 `git submodule init -- minisat`。
+先运行 `make test_minisat` 测试minisat是否能正常运行，如果该命令失败，则进入 `minisat/`，运行 
+```bash
+mkdir build && cd build && cmake .. -DCMAKE_CXX_FLAGS=-fpermissive && make
+```
+并将 `minisat/build/libminisat.a` 复制到项目跟目录下。
+
+具体使用方法如下：
 
 ```c++
 #include <minisat/core/Solver.h>
@@ -153,9 +158,11 @@ int main() {
 ## Hint
 
 ### 关于SDC
+参考论文 [An efficient and versatile scheduling algorithm based on SDC formulation](https://dl.acm.org/doi/10.1145/1146909.1147025)。
 
-SDC的linear order选取对调度有较大的影响，直接拿拓扑序当linear order简单但是效果不一定好。可以考虑从其他调度方法的结果中得到linear order。
+SDC的linear order选取对调度有较大的影响，直接拿拓扑序当linear order简单但是效果不一定好。可以考虑从其他调度方法的结果中得到linear order并根据资源的实际使用情况对order进行调整。
 
 ### 关于SAT+SDC
+参考论文 [A Scalable Approach to Exact Resource-Constrained Scheduling Based on a Joint SDC and SAT Formulation](https://dl.acm.org/doi/10.1145/3174243.3174268)。
 
 SAT+SDC的求解效率会更慢，SAT编码的时候除了关于resource的约束之外，可以考虑加入一些clause，将对于调度问题不合理的解去掉（例如但不限于 $O_{i \rightarrow j}$ 和 $O_{j \rightarrow i}$ 同时为真），这样相比通过SDC找负环得到这些冲突子句要高效的多。
