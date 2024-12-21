@@ -1,4 +1,9 @@
 # Lab: 高层次综合调度实现
+在这个Lab里，你将实现一个高层次综合的调度算法，处理没有控制流情况下的调度问题。
+
+有问题可以先到 [Issues](https://github.com/pku-liang/hlcd-hls-lab-handout/issues?q=label:question) 里去找找看。
+
+**截至日期: 2025年1月5日**
 
 ## 输入格式
 
@@ -12,18 +17,18 @@
 
 ### Resource文件
 
-第一行输入一个正整数t和一个浮点数clock,表示一共有t种type类型,时钟周期限制为clock。
+第一行输入一个正整数t和一个浮点数clock_period,表示一共有t种type类型,时钟周期限制为clock_period。
 
 接下来t行,每行以字符串开头表示op_type,接下来4个数分别表示operand_num,delay,latency,limit。
 
 operand_num表示该op的operand数量。例如%3 = addi %1 %2,则operand_num=2。对于load和store，其第一个operand的值为memory。
 
-delay表示该运算的组合延迟,最终需要满足同一周期内的运算依赖保证delay之和不超过clock,latency为该运算所需周期数。
-时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算，而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
+delay表示该运算的组合延迟,最终需要满足同一周期内的运算依赖保证关键路径长度不超过clock_period,latency为该运算所需周期数。
+时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算（此时第$i+1$周期中 `addi` 的关键路径长度为7.0），而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
 
-limit为该运算单元的数量，任意周期内执行的运算不能超过该数量，-1表示该运算没有限制（对于latency=0的组合逻辑，保证limit=-1）。
+limit为该运算单元的数量，任意周期内正在执行的运算不能超过该数量（latency=k的运算需要占用这个资源k个周期，如果limit=1的话，下一个运算需要在k周期（含）之后开始），-1表示该运算没有限制（对于latency=0的组合逻辑，保证limit=-1）。
 
-load和store运算的limit为memory的端口数量，相同且只为1或2，对同一个memory的load和store运算共享这limit个资源。
+load和store运算的limit为memory的端口数量，相同且只为1或2。所有对同一个memory的load和store运算共享这limit个资源。
 
 ## 样例输入
 
@@ -83,9 +88,9 @@ shift_left和addi在第一个周期运行,store在第二个周期运行。
 ## 代码框架
 
 输入输出的相关处理代码已经提供，你只需要实现 `scheduler.cpp` 中的 `schedule` 函数。
-其参数 `DFG *dfg` 为需要被调度的数据图形式，其中每个 `Stmt*` 表示一个op，可以通过虚函数
-`is_mem_stmt` 判断该op是否为 `load/store` op，并通过 `get_arr_idx` 获取访问的memory标号。
-`vector<Op*> &op` 保存了所有运算资源的信息，
+其参数 `DFG *dfg` 为需要被调度的数据图形式，其中每个 `Stmt*` 表示一个运算，可以通过虚函数
+`is_mem_stmt` 判断该运算是否为 `load/store` op，并通过 `get_arr_idx` 获取访问的memory标号。
+`vector<Op*> &ops` 保存了所有运算资源的信息，
 `double clock_period` 为目标时钟周期。你可以通过 `get_deps_and_uses` 获取运算之间的依赖关系。
 
 你实现的 `schedule` 函数需要为每个 `Stmt` 求出 `start_cycle`，表示这个op开始计算的时钟周期，`start_cycle` 需要是正整数。
@@ -97,7 +102,7 @@ $$\text{max}_i \left\lbrace\ \text{start-cycle}_i + \text{max}(\text{latency}_i-
 ### 运行方法
 - 运行 `make sched` 编译调度程序
 - 运行 `make verifier` 编译检查程序
-- 运行 `make test TEST=[1..5]` 对测试调度程序
+- 运行 `make test TEST=[1..5]` 运行对应测试点，生成的schedule.txt文件会保存你的调度结果。
 
 ## 评分标准
 
@@ -162,9 +167,9 @@ int main() {
 ### 关于SDC
 参考论文 [An efficient and versatile scheduling algorithm based on SDC formulation](https://dl.acm.org/doi/10.1145/1146909.1147025)。
 
-SDC的linear order选取对调度有较大的影响，直接拿拓扑序当linear order简单但是效果不一定好。可以考虑从其他调度方法的结果中得到linear order并根据资源的实际使用情况对order进行调整。
+SDC的linear order选取对调度有较大的影响，直接拿拓扑序当linear order简单但是效果不一定好（可能比ASAP还差）。可以考虑从其他调度方法的结果中得到linear order并根据资源的实际使用情况对order进行调整。
 
 ### 关于SAT+SDC
 参考论文 [A Scalable Approach to Exact Resource-Constrained Scheduling Based on a Joint SDC and SAT Formulation](https://dl.acm.org/doi/10.1145/3174243.3174268)。
 
-SAT+SDC的求解效率会更慢，SAT编码的时候除了关于resource的约束之外，可以考虑加入一些clause，将对于调度问题不合理的解去掉（例如但不限于 $O_{i \rightarrow j}$ 和 $O_{j \rightarrow i}$ 同时为真），这样相比通过SDC找负环得到这些冲突子句要高效的多。
+SAT+SDC的求解效率会更慢，注意时间限制。SAT编码的时候除了关于resource的约束之外，可以考虑加入一些clause，将对于调度问题不合理的解去掉（例如但不限于 $O_{i \rightarrow j}$ 和 $O_{j \rightarrow i}$ 同时为真），这样相比通过SDC找负环得到这些冲突子句要高效的多。
