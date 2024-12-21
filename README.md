@@ -11,7 +11,7 @@
 
 第一行三个自然数n m k,分别表示memory个数、输入参数个数、和ir行数。
 
-接下来k行,每行以字符串开头表示op_type,接下来包括若干自然数,表示该op的所有operand,其中-1代表常数。
+接下来k行,每行以字符串开头表示op_type,接下来包括若干自然数,表示该op的所有operand,其中-1代表常数。对于load和store，其第一个operand的值为memory。
 
 其中第i行如果有返回值,则结果为(n+m+k)。
 
@@ -21,7 +21,7 @@
 
 接下来t行,每行以字符串开头表示op_type,接下来4个数分别表示operand_num,delay,latency,limit。
 
-operand_num表示该op的operand数量。例如%3 = addi %1 %2,则operand_num=2。对于load和store，其第一个operand的值为memory。
+operand_num表示该op的operand数量。例如%3 = addi %1 %2,则operand_num=2。
 
 delay表示该运算的组合延迟,最终需要满足同一周期内的运算依赖保证关键路径长度不超过clock_period,latency为该运算所需周期数。
 时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如下图所示，当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算（此时第$i+1$周期中 `addi` 的关键路径长度为7.0），而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
