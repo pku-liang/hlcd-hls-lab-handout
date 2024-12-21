@@ -171,7 +171,10 @@ int main(int argc, char **argv) {
   parse(dfg_file, op_file, &dfg, ops, clock_period);
   
   int sat_sdc_lat, asap_lat;
-  fscanf(dfg_file, "%d%d", &sat_sdc_lat, &asap_lat);
+  if (fscanf(dfg_file, "%d%d", &sat_sdc_lat, &asap_lat) != 2) {
+    sat_sdc_lat = -1;
+    asap_lat = -1;
+  }
 
   int n_stmts = dfg.stmts.size();
   
@@ -201,8 +204,10 @@ int main(int argc, char **argv) {
 
   printf("Total latency: %d\n", total_latency);
 
-  double ratio = 20.0 / (double)(sat_sdc_lat - asap_lat);
-  printf("Score: %.2lf\n", min(100.0, max(60.0, (double)(total_latency-asap_lat) * ratio + 80.0)));
+  if (sat_sdc_lat > 0) {
+    double ratio = 20.0 / (double)(sat_sdc_lat - asap_lat);
+    printf("Score: %.2lf\n", min(100.0, max(60.0, (double)(total_latency-asap_lat) * ratio + 80.0)));
+  }
 
   return 0;
 }

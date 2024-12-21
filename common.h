@@ -8,33 +8,33 @@ class Stmt;
 class Op;
 
 struct Op {
-  int latency;
-  int limit;
-  int idx;
-  double delay;
-  std::string name;
+  int latency;       // latency of this op. 0 means this op is combinational
+  int limit;         // resource limit of this op. -1 means unlimited
+  int idx;           // index of this op in the `ops` vector
+  double delay;      // delay of this op
+  std::string name;  // name of this op
 };
 
 struct Stmt {
-  Op *op;
-  int idx;
-  int start_cycle;
-  std::vector<Stmt*> ins;
+  Op *op;                   // pointer to the related op
+  int idx;                  // index of this stmt in the `stmts` vector
+  int start_cycle;          // start cycle of this op, you need to fill this member
+  std::vector<Stmt*> ins;   // inputs of this op. constant and external inputs are ignored
 
   virtual bool is_mem_stmt() { return false; }
   virtual int get_arr_idx() { return -1; }
 };
 
 struct MemStmt : Stmt {
-  int arr_idx;
+  int arr_idx;               // index of the accessed memory
 
   virtual bool is_mem_stmt() override { return true; }
   virtual int get_arr_idx() override { return arr_idx; }
 };
 
 struct DFG {
-  int num_memory;
-  std::vector<Stmt*> stmts;
+  int num_memory;           // number of memories
+  std::vector<Stmt*> stmts; // all stmts read from the DFG file
   ~DFG() {
     for (auto stmt_ptr : stmts)
       delete stmt_ptr;
