@@ -24,11 +24,12 @@
 operand_num表示该op的operand数量。例如%3 = addi %1 %2,则operand_num=2。
 
 delay表示该运算的组合延迟,最终需要满足同一周期内的运算依赖保证关键路径长度不超过clock_period,latency为该运算所需周期数。
-时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如下图所示，当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算（此时第$i+1$周期中 `addi` 的关键路径长度为7.0），而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
+时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如下图所示，当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算（此时第 $i+1$ 周期中 `addi` 的关键路径长度为7.0），而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
 
 ![Chaining](assets/chaining.png)
 
 limit为该运算单元的数量，任意周期内正在执行的运算不能超过该数量（latency=k的运算需要占用这个资源k个周期，如果limit=1的话，下一个运算需要在k周期之后开始），-1表示该运算没有限制（对于latency=0的组合逻辑，保证limit=-1）。
+
 如下图所示，latency=3的muli运算会在执行的3个周期中占用muli资源，另一个共用资源的muli需要在3个周期之后开始执行
 
 ![Resource](assets/resource.png)
@@ -108,6 +109,21 @@ $$\text{max}_i \left\lbrace\ \text{start-cycle}_i + \text{max}(\text{latency}_i-
 - 运行 `make sched` 编译调度程序
 - 运行 `make verifier` 编译检查程序
 - 运行 `make test TEST=[1..5]` 运行对应测试点，生成的schedule.txt文件会保存你的调度结果。
+
+### 调度结果检查
+verifier将依次检查调度结果的三个部分： `Dependence`，`Clock period` 和 `Resource Utilization`。
+- 当 `Dependence` 约束没有被满足时，会报告存在依赖关系的两个运算，以及他们被调度的周期
+- 当 `Clock period` 约束没有被满足时，会报告超过 clock period 的关键路径上的运算
+- 当 `Resource utilization` 约束没有被满足时，会报告在哪个周期的资源约束超出限制，以及使用这个资源的运算
+
+当所有检查通过时，verifier会报告最终的latency和对应的分数。你将会看到：
+```
+================
+||    PASS    ||
+================
+Total latency: 97
+Score: 89.32
+```
 
 ## 评分标准
 
