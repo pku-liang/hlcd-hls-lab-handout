@@ -24,11 +24,16 @@
 operand_num表示该op的operand数量。例如%3 = addi %1 %2,则operand_num=2。对于load和store，其第一个operand的值为memory。
 
 delay表示该运算的组合延迟,最终需要满足同一周期内的运算依赖保证关键路径长度不超过clock_period,latency为该运算所需周期数。
-时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算（此时第$i+1$周期中 `addi` 的关键路径长度为7.0），而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
+时序运算开始的那个周期不能有其他依赖的运算，但是在其计算的最后一个cycle可以计算依赖它结果的组合运算。例如下图所示，当有 `muli(latency=2, delay=4.0)` 和 `addi(latency=0, delay=3.0)` 且 `clock=10.0` 时，第 $i$ 周期计算 `muli`，对于依赖其结果的 `addi`，可以在第 $i+1$ 周期开始计算（此时第$i+1$周期中 `addi` 的关键路径长度为7.0），而依赖其结果的 `muli` 则必须在第 $i+2$ 周期（含）之后开始计算。
 
-limit为该运算单元的数量，任意周期内正在执行的运算不能超过该数量（latency=k的运算需要占用这个资源k个周期，如果limit=1的话，下一个运算需要在k周期（含）之后开始），-1表示该运算没有限制（对于latency=0的组合逻辑，保证limit=-1）。
+![Chaining](assets/chaining.png)
 
-load和store运算的limit为memory的端口数量，相同且只为1或2。所有对同一个memory的load和store运算共享这limit个资源。
+limit为该运算单元的数量，任意周期内正在执行的运算不能超过该数量（latency=k的运算需要占用这个资源k个周期，如果limit=1的话，下一个运算需要在k周期之后开始），-1表示该运算没有限制（对于latency=0的组合逻辑，保证limit=-1）。
+如下图所示，latency=3的muli运算会在执行的3个周期中占用muli资源，另一个共用资源的muli需要在3个周期之后开始执行
+
+![Resource](assets/resource.png)
+
+load和store运算的limit为memory的端口数量，相同且只为1或2。所有对同一个memory的load和store运算共享这limit个端口资源。
 
 ## 样例输入
 
