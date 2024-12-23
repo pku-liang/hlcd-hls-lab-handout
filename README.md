@@ -194,3 +194,7 @@ SDC的linear order选取对调度有较大的影响，直接拿拓扑序当linea
 参考论文 [A Scalable Approach to Exact Resource-Constrained Scheduling Based on a Joint SDC and SAT Formulation](https://dl.acm.org/doi/10.1145/3174243.3174268)。
 
 SAT+SDC的求解效率会更慢，注意时间限制。SAT编码的时候除了关于resource的约束之外，可以考虑加入一些clause，将对于调度问题不合理的解去掉（例如但不限于 $O_{i \rightarrow j}$ 和 $O_{j \rightarrow i}$ 同时为真），这样相比通过SDC找负环得到这些冲突子句要高效的多。
+
+## 作业提交
+
+请将整个文件夹提交到 `/root/handin/hw4` 目录。
