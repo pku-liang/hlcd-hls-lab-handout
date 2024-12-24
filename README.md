@@ -13,7 +13,7 @@
 
 接下来k行,每行以字符串开头表示op_type,接下来包括若干自然数,表示该op的所有operand,其中-1代表常数。对于load和store，其第一个operand的值为memory。
 
-其中第i行如果有返回值,则结果为(n+m+k)。
+其中第i行如果有返回值,则结果为(n+m+i)。
 
 ### Resource文件
 
