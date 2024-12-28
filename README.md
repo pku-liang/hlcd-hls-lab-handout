@@ -3,6 +3,8 @@
 
 有问题可以先到 [Issues](https://github.com/pku-liang/hlcd-hls-lab-handout/issues?q=label:question) 里去找找看。
 
+请使用git clone --recurse-submodules https://github.com/pku-liang/hlcd-hls-lab-handout.git来下载仓库。
+
 **截止日期: 2025年1月5日（延长至1月10日）**
 
 ## 输入格式
@@ -135,7 +137,7 @@ Score: 89.32
 
 ## Minisat求解器使用
 
-实现SDC+SAT需要调用SAT求解器，下发代码中提供了minisat作为可能用到的SAT求解器。若 `minisat/` 目录为空，则运行 `git submodule init -- minisat`。
+实现SDC+SAT需要调用SAT求解器，下发代码中提供了minisat作为可能用到的SAT求解器。若 `minisat/` 目录为空，则运行 `git submodule update --init --recursive`。
 先运行 `make test_minisat` 测试minisat是否能正常运行，如果该命令失败，则进入 `minisat/`，运行 
 ```bash
 mkdir build && cd build && cmake .. -DCMAKE_CXX_FLAGS=-fpermissive && make
