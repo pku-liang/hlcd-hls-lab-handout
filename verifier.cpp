@@ -27,7 +27,7 @@ void verify_deps(DFG *dfg, const vec2d<int> &uses) {
       int use_is_sequential = dfg->stmts[use]->op->latency > 0;
 
       // The latency cycle can be chained with other combinational ops
-      int result_cycle = start_i + dfg->stmts[i]->op->latency - 1;
+      int result_cycle = start_i + max(dfg->stmts[i]->op->latency, 1) - 1;
       if (result_cycle + use_is_sequential > start_use)
         verify_deps_failed(dfg, i, use, result_cycle + use_is_sequential);
     }
@@ -66,7 +66,7 @@ void verify_clock_period(DFG *dfg, const vec2d<int> &uses, double clock_period) 
   int n_stmts = dfg->stmts.size();
   for (int i = 0; i < n_stmts; ++i) {
     vector<int> critical;
-    int in_cycle = dfg->stmts[i]->start_cycle + dfg->stmts[i]->op->latency - 1;
+    int in_cycle = dfg->stmts[i]->start_cycle + max(dfg->stmts[i]->op->latency, 1) - 1;
     dfs_cp(dfg, uses, i, in_cycle, 0.0, clock_period, critical);
   }
 }
