@@ -3,7 +3,7 @@
 
 有问题可以先到 [Issues](https://github.com/pku-liang/hlcd-hls-lab-handout/issues?q=label:question) 里去找找看。
 
-请使用git clone --recurse-submodules https://github.com/pku-liang/hlcd-hls-lab-handout.git来下载仓库。
+请使用git clone --recurse-submodules https://github.com/pku-liang/hlcd-hls-lab-handout.git 来下载仓库。
 
 **截止日期: 2025年1月5日（延长至1月10日）**
 
