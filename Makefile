@@ -1,7 +1,7 @@
 CC = /usr/bin/gcc
 CXX = /usr/bin/g++
 TEST ?= 1
-CFLAGS = -I$(shell pwd)/minisat/ -fpermissive -fPIC -std=c++17 -g
+CFLAGS = -I$(shell pwd)/minisat/ -fpermissive -fPIC -std=c++17 -g -O2
 
 verifier: common.cpp verifier.cpp
 	$(CXX) $(CFLAGS) -o $@ $^ $(CFLAGS)
