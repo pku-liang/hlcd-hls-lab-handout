@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 
 		int n_operands = ops[op_id].n_operands;
 		if (ops[op_id].name == "load" || ops[op_id].name == "store") {
-			operands.push_back(rand() % n_mem);
+			operands.push_back(rand() % n_mem + 1);
 			n_operands -= 1;
 		}
 		for (int j = 0; j < n_operands; ++j) {
