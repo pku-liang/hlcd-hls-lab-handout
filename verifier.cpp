@@ -138,11 +138,20 @@ void verify_resource(DFG *dfg, const vector<Op*> &ops) {
   int n_mems = dfg->num_memory;
   for (int i = 0; i < n_mems; ++i) {
     vector<tuple<int, int, int>> intv;
-    if (dfg->stmts[i]->is_mem_stmt() && 
-        dfg->stmts[i]->get_arr_idx() == n_mems) {
-      int start = dfg->stmts[i]->start_cycle;
-      int end = start + max(dfg->stmts[i]->op->latency, 1) - 1;
-      intv.push_back({start, end, i});
+    // if (dfg->stmts[i]->is_mem_stmt() && 
+    //     dfg->stmts[i]->get_arr_idx() == n_mems) {
+    //   int start = dfg->stmts[i]->start_cycle;
+    //   int end = start + max(dfg->stmts[i]->op->latency, 1) - 1;
+    //   intv.push_back({start, end, i});
+    // }
+    for(int j = 0; j < n_stmts; ++j){
+      if (dfg->stmts[j]->is_mem_stmt() && dfg->stmts[j]->get_arr_idx() == i) {
+        int start = dfg->stmts[j]->start_cycle;
+        int end = start + max(dfg->stmts[j]->op->latency, 1) - 1;
+        intv.push_back({start, end, j});
+        if(j == 165)
+          cout << dfg->stmts[j]->get_arr_idx() << endl;
+      }
     }
 
     check_intervals("load/store", intv, memport_lim);
