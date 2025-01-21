@@ -136,7 +136,7 @@ void verify_resource(DFG *dfg, const vector<Op*> &ops) {
     }
 
   int n_mems = dfg->num_memory;
-  for (int i = 0; i < n_mems; ++i) {
+  for (int i = 1; i <= n_mems; ++i) {
     vector<tuple<int, int, int>> intv;
 
     for (int j = 0; j < n_stmts; ++j)
